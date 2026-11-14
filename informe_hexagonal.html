@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Informe Técnico: Arquitectura Hexagonal en SaludYa</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+  @page {
+    size: A4;
+    margin: 16mm 14mm 16mm 14mm;
+  }
+
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    color: #1e293b;
+    background-color: #ffffff;
+    line-height: 1.55;
+    font-size: 10pt;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .cover {
+    height: 90vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 40px 20px;
+    border-bottom: 3px solid #2563eb;
+    margin-bottom: 30px;
+    page-break-after: always;
+  }
+
+  .badge-header {
+    display: inline-block;
+    background: #eff6ff;
+    color: #1d4ed8;
+    padding: 6px 14px;
+    border-radius: 9999px;
+    font-weight: 600;
+    font-size: 9pt;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    border: 1px solid #bfdbfe;
+    margin-bottom: 20px;
+  }
+
+  .cover-title {
+    font-size: 26pt;
+    font-weight: 800;
+    color: #0f172a;
+    line-height: 1.2;
+    margin-bottom: 12px;
+  }
+
+  .cover-subtitle {
+    font-size: 13pt;
+    color: #475569;
+    font-weight: 400;
+    line-height: 1.4;
+    margin-bottom: 25px;
+  }
+
+  .cover-meta {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 20px;
+    margin-top: 30px;
+  }
+
+  .meta-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  .meta-item strong {
+    display: block;
+    font-size: 8pt;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 2px;
+  }
+
+  .meta-item span {
+    font-size: 10pt;
+    color: #1e293b;
+    font-weight: 600;
+  }
+
+  .cover-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid #e2e8f0;
+    padding-top: 16px;
+    font-size: 8.5pt;
+    color: #64748b;
+  }
+
+  h1, h2, h3, h4 {
+    color: #0f172a;
+    font-weight: 700;
+  }
+
+  h1 {
+    font-size: 17pt;
+    border-bottom: 2px solid #2563eb;
+    padding-bottom: 6px;
+    margin-top: 24px;
+    margin-bottom: 14px;
+  }
+
+  h2 {
+    font-size: 13pt;
+    margin-top: 18px;
+    margin-bottom: 10px;
+    color: #1e3a8a;
+  }
+
+  h3 {
+    font-size: 10.5pt;
+    margin-top: 12px;
+    margin-bottom: 6px;
+    color: #334155;
+  }
+
+  p {
+    margin-bottom: 10px;
+    text-align: justify;
+  }
+
+  .alert {
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin: 14px 0;
+    font-size: 9.5pt;
+    border-left: 4px solid;
+  }
+
+  .alert-info {
+    background: #eff6ff;
+    border-color: #2563eb;
+    color: #1e40af;
+  }
+
+  .alert-success {
+    background: #f0fdf4;
+    border-color: #16a34a;
+    color: #166534;
+  }
+
+  .card {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 14px;
+    margin: 12px 0;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 14px 0;
+    font-size: 8.5pt;
+  }
+
+  th, td {
+    padding: 8px 10px;
+    text-align: left;
+    border: 1px solid #e2e8f0;
+  }
+
+  th {
+    background: #f1f5f9;
+    font-weight: 600;
+    color: #1e293b;
+  }
+
+  tr:nth-child(even) {
+    background: #fafafa;
+  }
+
+  .badge-pass {
+    background: #dcfce7;
+    color: #15803d;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-weight: 600;
+    font-size: 8pt;
+    display: inline-block;
+  }
+
+  code {
+    font-family: 'JetBrains Mono', Consolas, monospace;
+    font-size: 8.5pt;
+    background: #f1f5f9;
+    padding: 2px 5px;
+    border-radius: 4px;
+    color: #0f172a;
+    border: 1px solid #e2e8f0;
+  }
+
+  pre {
+    background: #0f172a;
+    color: #f8fafc;
+    padding: 12px 14px;
+    border-radius: 6px;
+    font-family: 'JetBrains Mono', Consolas, monospace;
+    font-size: 8pt;
+    line-height: 1.45;
+    overflow-x: auto;
+    margin: 10px 0 14px 0;
+  }
+
+  pre code {
+    background: transparent;
+    color: inherit;
+    padding: 0;
+    border: none;
+  }
+
+  .diagram-box {
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    padding: 16px;
+    margin: 14px 0;
+    text-align: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 8pt;
+  }
+
+  .diagram-flow {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    margin: 10px 0;
+  }
+
+  .diagram-node {
+    padding: 8px 14px;
+    border-radius: 6px;
+    font-weight: 600;
+  }
+
+  .node-ext { background: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; }
+  .node-infra { background: #fef3c7; color: #b45309; border: 1px solid #fde68a; }
+  .node-app { background: #e0e7ff; color: #4338ca; border: 1px solid #c7d2fe; }
+  .node-dom { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
+
+  ul, ol {
+    margin-left: 20px;
+    margin-bottom: 12px;
+  }
+
+  li {
+    margin-bottom: 4px;
+  }
+
+  .page-break {
+    page-break-before: always;
+  }
+
+  .no-break {
+    page-break-inside: avoid;
+  }
+
+  .footer-note {
+    font-size: 7.5pt;
+    color: #94a3b8;
+    text-align: center;
+    margin-top: 25px;
+    border-top: 1px solid #f1f5f9;
+    padding-top: 8px;
+  }
+</style>
+</head>
+<body>
+
+<!-- PORTADA -->
+<div class="cover">
+  <div>
+    <span class="badge-header">Informe Técnico de Arquitectura</span>
+    <h1 class="cover-title">Diseño e Implementación de Arquitectura Hexagonal</h1>
+    <h2 class="cover-subtitle">Sistema de Agenda de Citas Médicas · Red de Clínicas SaludYa</h2>
+    <p style="font-size: 10.5pt; color: #334155;">
+      Documentación completa del proceso de diseño, modelado guiado por el dominio (DDD), desacoplamiento mediante puertos y adaptadores, implementación guiada por pruebas (TDD) y verificación de restricciones arquitectónicas.
+    </p>
+  </div>
+
+  <div class="cover-meta">
+    <div class="meta-grid">
+      <div class="meta-item">
+        <strong>Diplomado</strong>
+        <span>Desarrollo de Software Avanzado y Arquitectura</span>
+      </div>
+      <div class="meta-item">
+        <strong>Módulo y Sesión</strong>
+        <span>Módulo 1 · Sesión 3 (Arquitectura Hexagonal)</span>
+      </div>
+      <div class="meta-item">
+        <strong>Rol Desempeñado</strong>
+        <span>Arquitecto de Software & Diseñador de Solución</span>
+      </div>
+      <div class="meta-item">
+        <strong>Estado de Verificación</strong>
+        <span>34 / 34 Pruebas Aprobadas (100% Verde)</span>
+      </div>
+      <div class="meta-item">
+        <strong>Lenguaje y Entorno</strong>
+        <span>TypeScript 5.6 · Node.js v20.20.2 · Vitest 2.1.0</span>
+      </div>
+      <div class="meta-item">
+        <strong>Fecha de Emisión</strong>
+        <span>14 de Noviembre de 2026</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="cover-footer">
+    <span>SaludYa · Agenda de Citas Hexagonal</span>
+    <span>Documento Técnico de Acreditación</span>
+  </div>
+</div>
+
+<!-- CAPÍTULO 1: RESUMEN EJECUTIVO -->
+<div class="no-break">
+  <h1>1. Resumen Ejecutivo</h1>
+  <p>
+    El presente informe documenta la concepción, diseño e implementación de la solución de software para el sistema de agenda de citas médicas de la red de clínicas <strong>SaludYa</strong>, correspondiente a la práctica práctica de la Sesión 3 del Módulo 1.
+  </p>
+  <p>
+    El proyecto partió de un repositorio base estructurado bajo la metodología <strong>TDD (Test-Driven Development)</strong>, en el cual no existía código productivo (la carpeta <code>src/</code> no existía) y la totalidad de las 9 suites de pruebas iniciaban en rojo. A través de un proceso pedagógico e incremental guiado por las directrices del arquitecto (consignadas en <code>AGENTS.md</code>), se construyó una arquitectura hexagonal pura (Puertos y Adaptadores) sin modificar las pruebas existentes ni introducir dependencias de terceros.
+  </p>
+
+  <div class="alert alert-success">
+    <strong>Resultado global:</strong> La solución final alcanzó una cobertura del <strong>100% de pruebas en verde (34 de 34 pruebas aprobadas)</strong> en 1.01 segundos, superó la función de aptitud arquitectónica (garantía de no violación de la regla de dependencias) y certificó <strong>0 errores de tipado estricto</strong> en TypeScript (<code>tsc --noEmit</code>).
+  </div>
+</div>
+
+<!-- CAPÍTULO 2: FUNDAMENTOS DE LA ARQUITECTURA HEXAGONAL -->
+<div class="no-break">
+  <h1>2. Fundamentos de Arquitectura Hexagonal</h1>
+  <p>
+    La <strong>Arquitectura Hexagonal</strong>, formulada por Alistair Cockburn (conocida también como patrón de <em>Puertos y Adaptadores</em>), tiene como propósito fundamental aislar el núcleo del negocio de cualquier influencia o dependencia tecnológica externa (marcos de trabajo, motores de bases de datos, sistemas de archivos, protocolos de red o interfaces gráficas).
+  </p>
+
+  <h2>2.1. La Regla de Dependencia Estricta</h2>
+  <p>
+    En la arquitectura hexagonal, las dependencias de código <strong>solo apuntan hacia adentro</strong>:
+  </p>
+
+  <div class="diagram-box">
+    <div class="diagram-flow">
+      <div class="diagram-node node-infra">Infraestructura (Adaptadores)<br><small>JSON / Memoria / HTTP</small></div>
+      <span style="font-size: 14pt; color: #64748b;">➔</span>
+      <div class="diagram-node node-app">Aplicación (Casos de Uso)<br><small>Agendar / Cancelar</small></div>
+      <span style="font-size: 14pt; color: #64748b;">➔</span>
+      <div class="diagram-node node-dom">Dominio (Reglas Puras)<br><small>Agenda / Cita / RangoHorario</small></div>
+    </div>
+    <div style="color: #64748b; font-size: 7.5pt; margin-top: 6px;">
+      Principio rector: El núcleo no conoce el exterior. El exterior conoce y se adapta al núcleo.
+    </div>
+  </div>
+
+  <h2>2.2. Por qué esta regla protege el negocio</h2>
+  <p>
+    Si las reglas de negocio importaran librerías de bases de datos (por ejemplo, SQL o MongoDB), cualquier actualización, migración o cambio tecnológico obligaría a reescribir y re-probar las reglas médicas. Al invertir las dependencias mediante <strong>puertos (interfaces)</strong>, el negocio declara lo que necesita, y los adaptadores técnicos se ven obligados a ajustarse a dicho contrato sin tocar el núcleo.
+  </p>
+</div>
+
+<div class="page-break"></div>
+
+<!-- CAPÍTULO 3: MODELADO DEL DOMINIO -->
+<div class="no-break">
+  <h1>3. Etapa 1 · Modelado del Dominio (`src/domain/`)</h1>
+  <p>
+    La capa de dominio representa el corazón de SaludYa. Se construyó de forma 100% pura: no realiza llamadas al sistema operativo (<code>node:fs</code>), no utiliza <code>new Date()</code> sin recibirla y no importa ninguna librería externa.
+  </p>
+
+  <h2>3.1. Conceptos y Componentes Implementados</h2>
+
+  <div class="card">
+    <h3>A. Objeto de Valor (Value Object): <code>RangoHorario</code></h3>
+    <p>
+      Representa el intervalo de atención médica (hora de inicio y fin). Se caracteriza por:
+    </p>
+    <ul>
+      <li><strong>Inmutabilidad y copia defensiva:</strong> Clona las instancias de <code>Date</code> en su constructor privado para impedir que modificaciones externas (mutaciones por referencia) alteren el estado interno.</li>
+      <li><strong>Invariante de negocio:</strong> La hora de fin debe ser estrictamente posterior a la de inicio. De lo contrario, rechaza la instanciación lanzando <code>RangoInvalidoError</code>.</li>
+      <li><strong>Detección de cruce:</strong> El método <code>seCruzaCon(otro)</code> verifica matemáticamente si existe solapamiento temporal. Si una cita termina exactamente al minuto en que empieza la siguiente (ej. 09:00 a 09:30 y 09:30 a 10:00), <em>no</em> se cruzan.</li>
+      <li><strong>Identidad por valor:</strong> Dos rangos con los mismos milisegundos de inicio y fin son idénticos (<code>igualA(otro) === true</code>).</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h3>B. Entidad: <code>Cita</code></h3>
+    <p>
+      Representa la cita médica individual. A diferencia del objeto de valor, la entidad posee identidad única (<code>id</code>) que se mantiene constante aunque sus propiedades muten:
+    </p>
+    <ul>
+      <li>Nace siempre en estado <code>"confirmada"</code> y activa (<code>activa() === true</code>).</li>
+      <li>Controla su transición de estado mediante <code>cancelar()</code>. Si una cita ya cancelada intenta ser cancelada nuevamente, lanza <code>CitaYaCanceladaError</code>.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h3>C. Raíz del Agregado (Aggregate Root): <code>Agenda</code></h3>
+    <p>
+      Es el guardián de la coherencia del calendario del médico. Agrupa todas las citas correspondientes a un <code>medicoId</code>:
+    </p>
+    <ul>
+      <li><strong>Protección de invariante:</strong> Antes de añadir una cita mediante <code>agendar(cita)</code>, inspecciona su colección interna. Si la nueva cita solapa en horario con cualquier cita que se encuentre activa, rechaza la operación con <code>CruceDeHorarioError</code>.</li>
+      <li><strong>Liberación de disponibilidad:</strong> Al cancelar una cita previa, el horario queda automáticamente disponible para otra cita activa.</li>
+      <li><strong>Encapsulación estricta:</strong> El método <code>citas()</code> entrega una copia superficial del arreglo para evitar que código externo altere la colección con operaciones como <code>pop()</code> o <code>push()</code>.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h3>D. Puerto de Dominio: <code>AgendaRepositorio</code></h3>
+    <p>
+      Interfaz pura de TypeScript que declara las operaciones de persistencia indispensables para el dominio:
+    </p>
+    <pre><code>export interface AgendaRepositorio {
+  porMedico(medicoId: string): Promise&lt;Agenda&gt;;
+  guardar(agenda: Agenda): Promise&lt;void&gt;;
+}</code></pre>
+  </div>
+</div>
+
+<!-- CAPÍTULO 4: CASOS DE USO -->
+<div class="no-break">
+  <h1>4. Etapa 2 · Capa de Aplicación (`src/application/`)</h1>
+  <p>
+    La capa de aplicación orquesta las interacciones del sistema. No define reglas médicas (eso le corresponde al dominio), sino que coordina los pasos necesarios para llevar a cabo una intención del usuario.
+  </p>
+
+  <h2>4.1. Puertos de Aplicación</h2>
+  <p>
+    En [src/application/puertos.ts](file:///C:/Users/jader/OneDrive/Escritorio/Diplomado/Documentos%20Modulo%201/repositorio-base-sesion3/repositorio-base-sesion3/src/application/puertos.ts) se establecieron los contratos para interactuar con servicios externos:
+  </p>
+  <ul>
+    <li><code>EventBus</code>: Publicación asíncrona de eventos de dominio (<code>emit(nombre, datos)</code>).</li>
+    <li><code>GeneradorId</code>: Generación de identificadores únicos para las citas (<code>nuevo(): string</code>).</li>
+  </ul>
+
+  <h2>4.2. Casos de Uso Implementados</h2>
+  <ul>
+    <li>
+      <strong><code>AgendarCita</code>:</strong> Recibe el comando <code>{ medicoId, pacienteId, inicio, fin }</code>. Valida el rango, recupera la agenda del médico mediante el repositorio, genera un nuevo ID, construye la entidad <code>Cita</code>, ordena a la agenda que la registre (validando cruces), guarda la agenda y finalmente emite el evento <code>"cita.confirmada"</code>.
+    </li>
+    <li>
+      <strong><code>CancelarCita</code>:</strong> Recibe <code>{ medicoId, citaId }</code>, recupera la agenda, ejecuta la cancelación de la cita en la agenda, persiste el cambio y publica el evento <code>"cita.cancelada"</code>.
+    </li>
+  </ul>
+</div>
+
+<div class="page-break"></div>
+
+<!-- CAPÍTULO 5: INFRAESTRUCTURA -->
+<div class="no-break">
+  <h1>5. Etapa 3 y 5 · Capa de Infraestructura (`src/infrastructure/`)</h1>
+  <p>
+    Los adaptadores de infraestructura materializan los contratos definidos en los puertos. En esta práctica se implementaron dos mecanismos de persistencia totalmente diferentes que satisfacen idénticamente el contrato de <code>AgendaRepositorio</code>.
+  </p>
+
+  <h2>5.1. Adaptador en Memoria (`AgendaRepositorioMemoria`)</h2>
+  <p>
+    Almacena las agendas en un mapa en memoria (<code>Map&lt;string, Agenda&gt;</code>). Para evitar fugas de memoria y mutaciones accidentales por referencia entre lecturas y escrituras, implementa <strong>clonación defensiva</strong> utilizando <code>Cita.reconstruir(...)</code> en cada operación de lectura y guardado.
+  </p>
+
+  <h2>5.2. Adaptador en Archivo JSON (`AgendaRepositorioJson`)</h2>
+  <p>
+    Persiste las agendas en el disco duro dentro de un archivo <code>.json</code> estructurado por <code>medicoId</code>. Al invocar <code>guardar()</code>, transforma las entidades a objetos de transferencia (DTOs) serializables y asegura la creación de los directorios intermedios mediante <code>node:fs</code>. Al invocar <code>porMedico()</code>, lee el archivo y reconstituye las entidades de dominio completas.
+  </p>
+
+  <h2>5.3. El Poder de las Pruebas de Contrato (Contract Testing)</h2>
+  <div class="alert alert-info">
+    Una <strong>prueba de contrato</strong> (ubicada en <code>test/infraestructura/contrato.ts</code>) es una batería de pruebas genérica que valida si una implementación de <code>AgendaRepositorio</code> cumple con los invariantes de almacenamiento requeridos. Tanto el repositorio en memoria como el de JSON fueron sometidos a la <strong>misma prueba de contrato</strong>, garantizando que ambos son 100% intercambiables sin alterar la aplicación.
+  </div>
+</div>
+
+<!-- CAPÍTULO 6: COMPOSICIÓN -->
+<div class="no-break">
+  <h1>6. Raíz de Composición (`src/composicion.ts`)</h1>
+  <p>
+    En la arquitectura hexagonal, ningún componente del dominio ni de la aplicación tiene permitido instanciar adaptadores concretos. El único archivo facultado para hacerlo es la <strong>Raíz de Composición (*Composition Root*)</strong>.
+  </p>
+
+  <h2>6.1. Función Ensambladora `crearApp(persistencia)`</h2>
+  <p>
+    Permite configurar dinámicamente la infraestructura en el punto de arranque:
+  </p>
+  <pre><code>// Intercambio instantáneo de infraestructura en una sola línea
+const appMemoria = crearApp({ tipo: "memoria" });
+const appDisco = crearApp({ tipo: "json", ruta: "./datos/agendas.json" });</code></pre>
+
+  <h2>6.2. Adaptador Primario (Controlador de Entrada)</h2>
+  <p>
+    La aplicación incluye un controlador simulado (<code>app.controller.post()</code>) que traduce las peticiones externas y mapea las excepciones del dominio a códigos de respuesta estándar de la industria web:
+  </p>
+  <ul>
+    <li><strong><code>201 Created</code>:</strong> Cita agendada exitosamente con su ID.</li>
+    <li><strong><code>400 Bad Request</code>:</strong> Datos incompletos, fechas mal formateadas o rango de horario inválido (<code>RangoInvalidoError</code>).</li>
+    <li><strong><code>409 Conflict</code>:</strong> Colisión de horarios para el médico (<code>CruceDeHorarioError</code>).</li>
+  </ul>
+</div>
+
+<!-- CAPÍTULO 7: RESULTADOS Y VERIFICACIÓN -->
+<div class="no-break">
+  <h1>7. Tabla de Resultados y Verificación Técnica</h1>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Etapa</th>
+        <th>Comando de Ejecución</th>
+        <th>Pruebas Pasadas</th>
+        <th>Tiempo</th>
+        <th>Estado</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>1. Dominio</strong></td>
+        <td><code>npm run test:dominio</code></td>
+        <td>14 / 14 pruebas</td>
+        <td>0.66s</td>
+        <td><span class="badge-pass">Aprobado</span></td>
+      </tr>
+      <tr>
+        <td><strong>2. Aplicación</strong></td>
+        <td><code>npm run test:aplicacion</code></td>
+        <td>5 / 5 pruebas</td>
+        <td>0.87s</td>
+        <td><span class="badge-pass">Aprobado</span></td>
+      </tr>
+      <tr>
+        <td><strong>3. Memoria</strong></td>
+        <td><code>npm run test:memoria</code></td>
+        <td>4 / 4 pruebas</td>
+        <td>0.93s</td>
+        <td><span class="badge-pass">Aprobado</span></td>
+      </tr>
+      <tr>
+        <td><strong>4. Arquitectura</strong></td>
+        <td><code>npm run test:arquitectura</code></td>
+        <td>5 / 5 pruebas</td>
+        <td>0.69s</td>
+        <td><span class="badge-pass">Aprobado</span></td>
+      </tr>
+      <tr>
+        <td><strong>5. JSON & Intercambio</strong></td>
+        <td><code>npm run test:json</code></td>
+        <td>6 / 6 pruebas</td>
+        <td>0.89s</td>
+        <td><span class="badge-pass">Aprobado</span></td>
+      </tr>
+      <tr>
+        <td><strong>Verificación Global</strong></td>
+        <td><code>npm test</code></td>
+        <td><strong>34 / 34 pruebas</strong></td>
+        <td><strong>1.01s</strong></td>
+        <td><span class="badge-pass">100% Verde</span></td>
+      </tr>
+      <tr>
+        <td><strong>Chequeo de Tipos</strong></td>
+        <td><code>npm run typecheck</code></td>
+        <td>0 errores de compilación</td>
+        <td>Instantáneo</td>
+        <td><span class="badge-pass">Sin Errores</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>7.1. Funciones de Aptitud Arquitectónica (Fitness Functions)</h2>
+  <p>
+    En [test/arquitectura.test.ts](file:///C:/Users/jader/OneDrive/Escritorio/Diplomado/Documentos%20Modulo%201/repositorio-base-sesion3/repositorio-base-sesion3/test/arquitectura.test.ts), una prueba automática inspecciona las cadenas de <code>import</code> del código fuente para garantizar que nadie viole las fronteras arquitectónicas:
+  </p>
+  <ul>
+    <li>✓ El dominio no importa nada externo (ni Node ni otras capas).</li>
+    <li>✓ La aplicación solo importa de <code>domain</code> y de sí misma.</li>
+    <li>✓ Los adaptadores de infraestructura no se conocen ni se importan entre sí.</li>
+    <li>✓ Únicamente <code>composicion.ts</code> decide qué adaptadores concretos instanciar.</li>
+  </ul>
+</div>
+
+<div class="page-break"></div>
+
+<!-- CAPÍTULO 8: LECCIONES Y CONCLUSIONES -->
+<div class="no-break">
+  <h1>8. Conclusiones y Transferencia de Aprendizaje</h1>
+
+  <h2>8.1. Respuestas a Decisiones Arquitectónicas Fundamentales</h2>
+  <div class="card">
+    <p><strong>1. ¿Qué cambiaría al migrar de persistencia en un proyecto real?</strong></p>
+    <p>
+      Si se decidiera reemplazar el archivo JSON por PostgreSQL o MongoDB, el 100% del código en <code>src/domain/</code> y <code>src/application/</code> permanecería <strong>completamente intacto</strong>. Solo se requeriría crear un nuevo adaptador (ej. <code>AgendaRepositorioPostgres</code>) y seleccionarlo en <code>src/composicion.ts</code>.
+    </p>
+  </div>
+
+  <div class="card">
+    <p><strong>2. ¿Por qué las pruebas unitarias corren en milisegundos?</strong></p>
+    <p>
+      Porque los casos de uso y las entidades no dependen de infraestructura real. Al emplear dobles de prueba (<em>fakes</em> y espías en memoria), no se requiere levantar contenedores Docker, abrir conexiones TCP ni inicializar esquemas relacionales, permitiendo retroalimentación instantánea al desarrollador.
+    </p>
+  </div>
+
+  <div class="card">
+    <p><strong>3. ¿Cuándo NO utilizar Arquitectura Hexagonal?</strong></p>
+    <p>
+      En aplicaciones de tipo <strong>CRUD anémico</strong> (donde solo se leen y escriben registros en una tabla sin reglas de validación o procesos de negocio complejos). En esos casos, la arquitectura hexagonal introduce sobrecostos injustificados de indirección (múltiples interfaces, adaptadores y DTOs). Hexagonal brilla cuando el negocio tiene reglas ricas, longevidad esperada y alta necesidad de testabilidad.
+    </p>
+  </div>
+
+  <h2>8.2. Balance del Rol del Arquitecto</h2>
+  <p>
+    Durante toda la práctica se mantuvo la disciplina impuesta por <code>AGENTS.md</code>:
+  </p>
+  <ul>
+    <li>Trabajo estrictamente ordenado por etapas (dominio ➔ aplicación ➔ memoria ➔ arquitectura ➔ JSON).</li>
+    <li>Prohibición absoluta de tocar o adulterar las pruebas preexistentes.</li>
+    <li>Diseño mínimo y justificado, evitando patrones decorativos o sobrediseño innecesario.</li>
+    <li>Compromiso con la verificación continua mediante comandos reproducibles.</li>
+  </ul>
+
+  <div class="footer-note">
+    Informe generado automáticamente para fines académicos y de evaluación · Diplomado en Desarrollo de Software Avanzado y Arquitectura de Aplicaciones · Noviembre 2026
+  </div>
+</div>
+
+</body>
+</html>
