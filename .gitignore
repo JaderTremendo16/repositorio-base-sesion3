@@ -1,2 +1,3 @@
 node_modules/
 agendas*.json
+.DS_Store
